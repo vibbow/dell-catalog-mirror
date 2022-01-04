@@ -1,0 +1,24 @@
+dell.vsean.net {
+  root * /var/www/dell.vsean.net
+  file_server
+
+  @catalog_xml {
+    expression {file}.matches("catalog.xml")
+  }
+
+  @catalog_xml_gz {
+    expression {file}.matches("catalog.xml.gz")
+  }
+
+  @dot_exe {
+    expression {file}.endsWith(".exe")
+  }
+
+  rewrite @catalog_xml /catalog.php
+
+  rewrite @catalog_xml_gz /catalog.php
+
+  redir @dot_exe https://dl.dell.com{http.request.uri.path}
+
+  php_fastcgi unix//run/php/php8.1-fpm.sock
+}

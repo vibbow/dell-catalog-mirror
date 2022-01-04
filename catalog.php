@@ -25,19 +25,26 @@ $pathInfo = filter_input(INPUT_SERVER, 'REQUEST_URI');
 $filename = pathinfo($pathInfo,  PATHINFO_BASENAME);
 $filename = strtolower($filename);
 
-switch ($filename) {
-    case 'catalog.xml':
-        header('Content-Type: application/xml');
-        echo file_get_contents(CACHE_DIR . 'catalog.xml');
-        break;
-    case 'catalog.xml.gz':
-        header('Content-Type: application/octet-stream');
-        echo file_get_contents(CACHE_DIR . 'catalog.xml.gz');
-        break;
-    default:
-        echo "You shall not pass";
-        break;
+if ($filename === 'catalog.xml' && str_contains($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) {
+    header("Content-Encoding: gzip");
+    header('Content-Type: application/xml;charset=utf-16');
+    header("Content-Length: " . filesize(CACHE_DIR . 'catalog.xml.gz'));
+    readfile(CACHE_DIR . 'catalog.xml.gz');
 }
+else if ($filename === 'catalog.xml') {
+    header('Content-Type: application/xml;charset=utf-16');
+    header("Content-Length: " . filesize(CACHE_DIR . 'catalog.xml'));
+    readfile(CACHE_DIR . 'catalog.xml');
+}
+else if ($filename === 'catalog.xml.gz') {
+    header('Content-Type: application/gzip');
+    header("Content-Length: " . filesize(CACHE_DIR . 'catalog.xml.gz'));
+    readfile(CACHE_DIR . 'catalog.xml.gz');
+}
+else {
+    echo "You shall not pass";
+}
+
 
 function uncompress($srcFile, $dstFile) {
     $sfp = gzopen($srcFile, "rb");
@@ -68,7 +75,7 @@ function download($url, $dstFile) {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0');
-	//curl_setopt($ch, CURLOPT_PROXY, '192.168.160.252:10086');
+	//curl_setopt($ch, CURLOPT_PROXY, '192.168.160.200:7890');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
